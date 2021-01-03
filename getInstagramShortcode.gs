@@ -9,6 +9,7 @@ const report = {
 const onOpen = e => SpreadsheetApp.getUi().createAddonMenu().addItem('スクレイピング実行', 'main').addToUi()
 
 const main = () => {
+  deleteTrigger()
   let message = ''
   const sheet = SpreadsheetApp.getActiveSpreadsheet()
   const sheet_id = sheet.getId()
@@ -148,5 +149,12 @@ class EmdedCode extends InstagramApi {
 
   seek (data) {
     return data.html
+  }
+}
+
+const deleteTrigger = () => {
+  const triggers = ScriptApp.getProjectTriggers()
+  for (let i in triggers) {
+    ScriptApp.deleteTrigger(triggers[i]);
   }
 }
