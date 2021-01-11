@@ -1,5 +1,6 @@
 const _ = LodashGS.load()
 const sleep = 5000
+const emdedcode_base = '<blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/%%shortcode%%/" data-instgrm-version="13" style=" background: #fff; border: 0; border-radius: 3px; box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5), 0 1px 10px 0 rgba(0, 0, 0, 0.15); margin: 1px; max-width: 540px; min-width: 326px; padding: 0; width: 99.375%; width: -webkit-calc(100% - 2px); width: calc(100% - 2px); "></blockquote>'
 const report = {
   success: 0,
   skip: 0,
@@ -46,7 +47,7 @@ const main = () => {
           const shortcode = (new ShortCode()).main(data[i]['tag_name'])
           let emdedcode = 'NULL'
           if (shortcode != 'NULL') {
-            emdedcode = (new EmdedCode()).main(shortcode)
+            emdedcode = emdedcode_base.replace('%%shortcode%%', shortcode)
           }
 
           if (1 < sql.select(['No.']).filter(`No. = ${data[i]['No.']}`).length) {
@@ -83,9 +84,7 @@ const isStop = (start_time) => {
   return 5 <= (current_time.getTime() - start_time.getTime()) / (1000 * 60)
 }
 
-
-/** class */
-class InstagramApi {
+class ShortCode {
   main (param) {
     try {
       const res = this.fetch(param)
@@ -98,17 +97,6 @@ class InstagramApi {
     }
   }
 
-  // override
-  fetch () {}
-
-  // override
-  parse () {}
-
-  // override
-  seek () {}
-}
-
-class ShortCode extends InstagramApi {
   fetch (tag_name) {
     const url = `https://www.instagram.com/graphql/query/?query_hash=298b92c8d7cad703f7565aa892ede943&variables={"tag_name":"${tag_name}","first":20}`
     return UrlFetchApp.fetch(encodeURI(url)).getContentText()
@@ -131,24 +119,6 @@ class ShortCode extends InstagramApi {
   seek (data) {
     // instagram選定の人気の写真トップを採用.
     return _.get(data, ('0.shortcode'))
-  }
-}
-
-class EmdedCode extends InstagramApi {
-  fetch (shortcode) {
-    const url = `https://api.instagram.com/oembed/?url=https://www.instagram.com/p/${shortcode}&hidecaption=1&maxwidth=540`
-    const params = {
-      "headers" : {"x-ig-app-id": "936619743392459"}
-    }
-    return UrlFetchApp.fetch(encodeURI(url), params).getContentText()
-  }
-
-  parse (data) {
-    return JSON.parse(data)
-  }
-
-  seek (data) {
-    return data.html
   }
 }
 
